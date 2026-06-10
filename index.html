@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>إدارة المنتجات</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="منتجاتي">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Tahoma,sans-serif;
+}
+
+body{
+
+    background:
+    linear-gradient(
+        135deg,
+        #eefbf3,
+        #f8fafc
+    );
+
+    padding:15px;
+
+    color:#111827;
+}
+
+.container{
+
+    max-width:1200px;
+
+    margin:auto;
+}
+
+/* ===== الهيدر ===== */
+
+.title-box{
+
+    background:
+    linear-gradient(
+        135deg,
+        #7c3aed,
+        #a855f7
+    );
+
+    color:white;
+
+    padding:22px;
+
+    border-radius:26px;
+
+    margin-bottom:18px;
+
+    box-shadow:
+    0 15px 35px rgba(16,185,129,0.25);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:15px;
+}
+
+.title-box h1{
+
+    font-size:28px;
+
+    margin-bottom:5px;
+}
+
+.counter-box{
+
+    background:
+    rgba(255,255,255,0.18);
+
+    padding:12px 18px;
+
+    border:none;
+
+    border-radius:16px;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:0.2s;
+}
+
+.counter-box:hover{
+
+    transform:scale(1.05);
+}
+
+/* ===== الكروت ===== */
+
+.form-card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:20px;
+
+    margin-bottom:16px;
+
+    box-shadow:
+    0 10px 25px rgba(0,0,0,0.05);
+}
+
+.form-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+    right:0;
+
+    width:100%;
+    height:5px;
+
+    background:
+    linear-gradient(
+        90deg,
+        #10b981,
+        #34d399
+    );
+}
+
+.card-title{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:18px;
+}
+
+.card-title h2{
+
+    font-size:20px;
+}
+
+.card-icon{
+
+    width:42px;
+    height:42px;
+
+    border-radius:14px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #d1fae5,
+        #a7f3d0
+    );
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:20px;
+}
+
+/* ===== الصورة ===== */
+
+.image-upload-box{
+
+    border:2px dashed #b7e4c7;
+
+    border-radius:20px;
+
+    text-align:center;
+
+    background:#f8fffb;
+
+    cursor:pointer;
+
+    transition:0.2s;
+
+    padding:15px;
+
+    max-width:160px;
+
+    margin:auto;
+}
+
+.image-upload-box:hover{
+
+    border-color:#10b981;
+
+    background:#f0fdf4;
+}
+
+#productImage{
+
+    display:none;
+}
+
+.preview-image{
+
+    width:65px;
+    height:65px;
+
+    object-fit:cover;
+
+    border-radius:14px;
+
+    margin-top:15px;
+
+    border:2px solid #e5e7eb;
+}
+
+/* ===== الفورم ===== */
+
+.mini-form{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(
+        auto-fit,
+        minmax(180px,1fr)
+    );
+
+    gap:14px;
+}
+
+.mini-input{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+}
+
+.mini-input label{
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    color:#065f46;
+}
+
+.mini-input input{
+
+    height:46px;
+
+    padding:0 14px;
+
+    border-radius:14px;
+
+    border:1px solid #dbe4e0;
+
+    background:#fcfffd;
+
+    font-size:14px;
+
+    outline:none;
+
+    transition:0.2s;
+}
+
+.mini-input input:focus{
+
+    border-color:#10b981;
+
+    box-shadow:
+    0 0 0 4px rgba(16,185,129,0.12);
+}
+
+/* ===== زر الحفظ ===== */
+
+.add-btn{
+
+    width:100%;
+
+    background:
+    linear-gradient(
+        135deg,
+        #059669,
+        #10b981
+    );
+
+    color:white;
+
+    border:none;
+
+    padding:16px;
+
+    border-radius:18px;
+
+    font-size:17px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:0.2s;
+}
+
+.add-btn:hover{
+
+    transform:
+    translateY(-2px);
+
+    box-shadow:
+    0 12px 25px rgba(16,185,129,0.25);
+}
+
+/* ===== الأزرار ===== */
+
+.buttons-bar{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-top:18px;
+
+    margin-bottom:25px;
+
+    flex-wrap:wrap;
+}
+
+.action-btn{
+
+    border:none;
+
+    padding:13px 18px;
+
+    border-radius:14px;
+
+    color:white;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+.export-btn{
+
+    background:
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #3b82f6
+    );
+}
+
+.import-btn{
+
+    background:
+    linear-gradient(
+        135deg,
+        #ea580c,
+        #f97316
+    );
+}
+
+/* ===== النافذة ===== */
+
+.table-popup{
+
+    position:fixed;
+
+    top:0;
+    right:0;
+
+    width:100%;
+    height:100%;
+
+    background:
+    rgba(0,0,0,0.45);
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    z-index:99999;
+
+    padding:15px;
+}
+
+.popup-content{
+
+    width:100%;
+
+    max-width:1400px;
+
+    max-height:95vh;
+
+    overflow:auto;
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:18px;
+}
+
+.popup-header{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:18px;
+}
+
+.close-popup{
+
+    width:42px;
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#ef4444;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-size:17px;
+}
+
+/* ===== البحث ===== */
+
+.search-box{
+
+    margin-bottom:18px;
+}
+
+.search-box input{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:16px;
+
+    border:1px solid #dbe4e0;
+
+    font-size:15px;
+
+    outline:none;
+}
+
+/* ===== الجدول ===== */
+
+.table-box{
+
+    overflow:auto;
+}
+
+table{
+
+    border-collapse:collapse;
+
+    table-layout:fixed;
+}
+th:nth-child(1),
+td:nth-child(1){width:50px;}
+
+th:nth-child(2),
+td:nth-child(2){width:70px;}
+
+th:nth-child(3),
+td:nth-child(3){width:150px;}
+
+th:nth-child(4),
+td:nth-child(4){width:300px;}
+
+th:nth-child(5),
+td:nth-child(5){width:120px;}
+
+th:nth-child(6),
+td:nth-child(6){width:80px;}
+
+th:nth-child(7),
+td:nth-child(7){width:80px;}
+
+th:nth-child(8),
+td:nth-child(8){width:100px;}
+
+th:nth-child(9),
+td:nth-child(9){width:100px;}
+
+th:nth-child(10),
+td:nth-child(10){width:70px;}
+
+th:nth-child(11),
+td:nth-child(11){width:100px;}
+
+th:nth-child(12),
+td:nth-child(12){width:100px;}
+th{
+
+    white-space:nowrap;
+
+    width:1%;
+
+}
+th{
+
+    background:
+    linear-gradient(
+        135deg,
+        #111827,
+        #1f2937
+    );
+
+    color:white;
+
+    padding:8px 4px;
+
+    text-align:center;
+}
+
+td{
+
+    padding:4px;
+
+    border-bottom:1px solid #e5e7eb;
+
+    text-align:center;
+}
+
+tr:hover td{
+
+    background:#f0fdf4;
+}
+
+.table-input{
+    display:inline-block;
+
+    width:auto;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    border:1px solid #d1d5db;
+
+    background:#fcfffd;
+
+    text-align:center;
+
+    overflow:hidden;
+
+    white-space:normal;
+
+    word-break:break-word;
+}
+
+.product-image{
+
+    width:100px;
+    height:70px;
+
+    object-fit:cover;
+
+    border-radius:12px;
+
+    border:2px solid #e5e7eb;
+}
+
+.edit-btn{
+
+    background:#f59e0b;
+
+    color:white;
+
+    border:none;
+
+    padding:9px;
+
+    border-radius:10px;
+
+    width:100%;
+
+    cursor:pointer;
+}
+
+.delete-btn{
+
+    background:#ef4444;
+
+    color:white;
+
+    border:none;
+
+    padding:9px;
+
+    border-radius:10px;
+
+    width:100%;
+
+    cursor:pointer;
+}
+
+/* ===== الرسائل ===== */
+
+.message-box{
+
+    position:fixed;
+
+    top:20px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:
+    linear-gradient(
+        135deg,
+        #059669,
+        #10b981
+    );
+
+    color:white;
+
+    padding:18px 28px;
+
+    border-radius:20px;
+
+    display:none;
+
+    z-index:999999;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    box-shadow:
+    0 18px 40px rgba(16,185,129,0.35);
+
+    min-width:280px;
+
+    text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="title-box">
+
+<div>
+
+<h1>إدارة المنتجات</h1>
+
+<p>نظام المنتجات</p>
+
+</div>
+
+<button
+class="counter-box"
+onclick="toggleProductsTable()"
+>
+
+📦 المواد :
+<span id="productsCount">0</span>
+
+</button>
+
+</div>
+
+<!-- الصورة -->
+
+<div class="form-card">
+
+<div class="card-title">
+
+<h2>صورة المنتج</h2>
+
+<div class="card-icon">
+📷
+</div>
+
+</div>
+
+<label class="image-upload-box">
+
+<input
+type="file"
+id="productImage"
+accept="image/*"
+capture="environment"
+>
+
+<div style="font-size:35px">
+📷
+</div>
+
+<p>رفع صورة</p>
+
+<button
+type="button"
+onclick="openGallery()"
+style="
+margin-top:10px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:14px;
+background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+color:white;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
+"
+>
+🖼️ اختيار صورة من الملفات
+</button>
+
+<button
+type="button"
+onclick="openCamera()"
+style="
+margin-top:10px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:14px;
+background:linear-gradient(135deg,#2563eb,#3b82f6);
+color:white;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
+"
+>
+📸 تصوير بالكاميرا
+</button>
+
+</label>
+<img
+id="previewImage"
+class="preview-image"
+style="display:none"
+>
+<div style="text-align:center">
+</div>
+
+</div>
+
+<!-- معلومات المنتج -->
+
+<div class="form-card">
+
+<div class="card-title">
+
+<h2>معلومات المنتج</h2>
+
+<div class="card-icon">
+📦
+</div>
+
+</div>
+
+<div class="mini-form">
+
+<div class="mini-input">
+
+<label>اسم المادة</label>
+
+<input
+type="text"
+id="material"
+placeholder="اسم المادة"
+>
+
+</div>
+
+<div class="mini-input">
+
+<label>الشركة</label>
+
+<input
+type="text"
+id="company"
+placeholder="الشركة"
+>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- باركود -->
+
+<div class="form-card">
+
+<div class="card-title">
+
+<h2>الباركود</h2>
+
+<div class="card-icon">
+📷
+</div>
+
+</div>
+
+<div style="display:flex;gap:10px;align-items:center;">
+
+<input
+type="text"
+id="barcode"
+placeholder="اكتب أو امسح الباركود"
+style="
+flex:1;
+height:46px;
+padding:0 14px;
+border-radius:14px;
+border:1px solid #dbe4e0;
+background:#fcfffd;
+font-size:14px;
+outline:none;
+"
+>
+
+<button
+type="button"
+id="scanBtn"
+onclick="startBarcodeScanner()"
+style="
+height:46px;
+padding:0 18px;
+border:none;
+border-radius:14px;
+background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+color:white;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
+white-space:nowrap;
+"
+>
+📷 مسح
+</button>
+
+</div>
+
+<!-- نافذة الماسح -->
+<div id="scannerModal" style="
+display:none;
+position:fixed;
+top:0;right:0;
+width:100%;height:100%;
+background:rgba(0,0,0,0.85);
+z-index:999999;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+gap:15px;
+padding:20px;
+">
+<div style="background:white;border-radius:20px;padding:15px;width:100%;max-width:500px;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+<span style="font-weight:bold;font-size:16px;">📷 امسح الباركود</span>
+<button onclick="stopBarcodeScanner()" style="border:none;background:#ef4444;color:white;padding:8px 14px;border-radius:10px;cursor:pointer;">✖ إغلاق</button>
+</div>
+<video id="scannerVideo" style="width:100%;border-radius:12px;" playsinline></video>
+<canvas id="scannerCanvas" style="display:none;"></canvas>
+<p id="scannerStatus" style="text-align:center;margin-top:10px;color:#6b7280;font-size:14px;">جاري البحث عن باركود...</p>
+</div>
+</div>
+
+</div>
+
+<!-- معلومات إضافية -->
+
+<div class="form-card">
+
+<div class="card-title">
+
+<h2>معلومات إضافية</h2>
+
+<div class="card-icon">
+📐
+</div>
+
+</div>
+
+<div class="mini-form">
+
+<div class="mini-input">
+
+<label>الوحدة 1</label>
+
+<input
+type="text"
+id="weight"
+placeholder="علبة"
+>
+
+</div>
+
+<div class="mini-input">
+
+<label>الوحدة 2</label>
+
+<input
+type="text"
+id="weight2"
+placeholder="كرتونة"
+>
+
+</div>
+
+<div class="mini-input">
+
+<label>التحويل</label>
+
+<input
+type="number"
+id="conversion"
+placeholder="12"
+>
+
+</div>
+
+<div class="mini-input">
+
+  <div class="mini-input">
+
+<label>آخر سعر شراء</label>
+
+<input
+type="number"
+id="buyPrice"
+placeholder="0"
+>
+
+</div>
+<label>السعر</label>
+
+<input
+type="number"
+id="sellPrice"
+placeholder="0"
+>
+
+</div>
+
+</div>
+
+</div>
+
+<button
+class="add-btn"
+onclick="addProduct()"
+>
+
+✔ حفظ المنتج
+
+</button>
+
+<div class="buttons-bar">
+
+<button
+class="action-btn export-btn"
+onclick="exportJSON()"
+>
+
+⬇️ تصدير JSON
+
+</button>
+
+<button
+class="action-btn import-btn"
+onclick="document.getElementById('jsonFile').click()"
+>
+
+⬆️ استيراد JSON
+
+</button>
+
+<input
+type="file"
+id="jsonFile"
+accept=".json"
+hidden
+>
+
+</div>
+
+<!-- نافذة المنتجات -->
+
+<div
+class="table-popup"
+id="tablePopup"
+>
+
+<div class="popup-content">
+
+<div class="popup-header">
+
+<h2>
+📦 جميع المنتجات
+</h2>
+
+<button
+class="close-popup"
+onclick="closeProductsPopup()"
+>
+
+✖
+
+</button>
+
+</div>
+
+<div class="search-box">
+
+<input
+type="text"
+id="searchInput"
+placeholder="🔍 ابحث عن منتج..."
+>
+
+</div>
+
+<button
+onclick="deleteAllProducts()"
+style="
+margin-bottom:15px;
+padding:12px 20px;
+border:none;
+border-radius:14px;
+background:#dc2626;
+color:white;
+font-size:15px;
+font-weight:bold;
+cursor:pointer;
+"
+>
+🗑️ حذف جميع المواد
+</button>
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+<th>✓</th>
+<th>الصورة</th>
+<th>المادة</th>
+<th>الباركود</th>
+<th>الشركة</th>
+<th>الوحدة 1</th>
+<th>الوحدة 2</th>
+<th>آخر سعر شراء</th>
+<th>السعر</th>
+<th>التحويل</th>
+<th>تعديل</th>
+<th>حذف</th>
+</tr>
+
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+<div
+id="pagination"
+style="
+margin-top:15px;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+"
+>
+
+<button onclick="prevPage()">
+◀ السابق
+</button>
+
+<span id="pageInfo">
+صفحة 1
+</span>
+
+<button onclick="nextPage()">
+التالي ▶
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div
+class="message-box"
+id="messageBox"
+></div>
+
+<script>
+
+let products = [];
+let editIndex = -1;
+let currentImage = "";
+let currentPage = 1;
+const itemsPerPage = 25;
+
+/* ===== debounce للحفظ ===== */
+let saveTimer;
+function debouncedSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveProducts, 500);
+}
+
+function showHoverImage(event,src){
+    if(!src) return;
+    const preview = document.getElementById("hoverPreview");
+    const img = document.getElementById("hoverPreviewImg");
+    img.src = src;
+    preview.style.display = "block";
+    preview.style.left = (event.clientX + 20) + "px";
+    preview.style.top = (event.clientY - 20) + "px";
+}
+
+function moveHoverImage(event){
+    const preview = document.getElementById("hoverPreview");
+    preview.style.left = (event.clientX + 20) + "px";
+    preview.style.top = (event.clientY - 20) + "px";
+}
+
+function hideHoverImage(){
+    document.getElementById("hoverPreview").style.display = "none";
+}
+
+/* ===== فتح الصورة ===== */
+function openImage(src){
+    if(!src) return;
+    document.getElementById("popupImage").src = src;
+    document.getElementById("imagePopup").style.display = "flex";
+}
+
+/* ===== اغلاق الصورة ===== */
+function closeImagePopup(){
+    document.getElementById("imagePopup").style.display = "none";
+}
+
+/* ===== الكاميرا ===== */
+function openCamera(){
+    document.getElementById("productImage").click();
+}
+
+function openGallery(){
+    const input = document.getElementById("productImage");
+    input.removeAttribute("capture");
+    input.click();
+    setTimeout(()=>{
+        input.setAttribute("capture","environment");
+    },1000);
+}
+
+/* ===== الصورة ===== */
+document.getElementById("productImage").addEventListener("change",function(){
+    const file = this.files[0];
+    if(!file) return;
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = function(e){
+        img.onload = function(){
+            const canvas = document.createElement("canvas");
+            const maxSize = 950;
+            let width = img.width;
+            let height = img.height;
+            if(width > height){
+                if(width > maxSize){
+                    height *= maxSize / width;
+                    width = maxSize;
+                }
+            }else{
+                if(height > maxSize){
+                    width *= maxSize / height;
+                    height = maxSize;
+                }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img,0,0,width,height);
+            currentImage = canvas.toDataURL("image/jpeg",0.8);
+            document.getElementById("previewImage").src = currentImage;
+            document.getElementById("previewImage").style.display = "block";
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+/* ===== حفظ ===== */
+function addProduct(){
+    const material = document.getElementById("material").value.trim();
+    if(material === ""){
+        showMessage("⚠️ اكتب اسم المادة");
+        return;
+    }
+
+    /* ===== منع التكرار ===== */
+    const duplicateProduct = products.find((item, index) => {
+        if(editIndex === index) return false;
+        return item.المادة.trim().toLowerCase() === material.toLowerCase();
+    });
+
+    if(duplicateProduct){
+        const confirmAdd = confirm("⚠️ المادة مكررة، هل تريد الإضافة؟");
+        if(!confirmAdd){
+            showMessage("❌ تم إلغاء الإضافة");
+            return;
+        }
+    }
+
+    const productData = {
+        المادة: material,
+        الباركود: document.getElementById("barcode").value.trim(),
+        الشركة: document.getElementById("company").value,
+        الوحدة_1: document.getElementById("weight").value,
+        الوحدة_2: document.getElementById("weight2").value,
+        آخر_سعر_شراء: document.getElementById("buyPrice").value,
+        السعر: document.getElementById("sellPrice").value,
+        التحويل: document.getElementById("conversion").value,
+        image: currentImage,
+        checked: false
+    };
+
+    if(editIndex !== -1){
+        products[editIndex] = productData;
+        editIndex = -1;
+        showMessage("✨ تم تعديل المنتج");
+    }else{
+        products.push(productData);
+        showMessage("✅ تم حفظ المنتج بنجاح");
+    }
+
+    renderTable();
+    saveProducts();
+    window.scrollTo({top:0,behavior:"smooth"});
+    document.activeElement.blur();
+    clearInputs();
+}
+
+/* ===== عرض - مُحسَّن بدون innerHTML += ===== */
+function renderTable(data = products){
+
+    document.getElementById("productsCount").innerHTML = products.length;
+
+    const tableBody = document.getElementById("tableBody");
+
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageData = data.slice(start, end);
+
+    currentPage = Math.min(
+        currentPage,
+        Math.ceil(data.length / itemsPerPage) || 1
+    );
+
+    /* بناء كل الصفوف مرة وحدة بدل innerHTML += */
+    let rows = "";
+    pageData.forEach((product, index) => {
+        rows += `
+        <tr style="background:${product.checked ? '#86efac' : ''}">
+            <td>${start + index + 1}</td>
+            <td>
+                <button
+                    onclick="toggleChecked(${index})"
+                    style="
+                        width:100%;
+                        padding:9px;
+                        border:none;
+                        border-radius:10px;
+                        cursor:pointer;
+                        font-size:18px;
+                        background:${product.checked ? '#16a34a' : '#d1d5db'};
+                        color:white;
+                    "
+                >
+                ${product.checked ? '✓' : ''}
+                </button>
+            </td>
+            <td>
+                <img
+                    src="${product.image || ''}"
+                    loading="lazy"
+                    class="product-image"
+                    onclick="openImage('${product.image || ''}')"
+                    ontouchstart="openImage('${product.image || ''}')"
+                    onmouseenter="openImage('${product.image || ''}')"
+                    onmouseleave="closeImagePopup()"
+                    style="cursor:pointer"
+                >
+            </td>
+            <td>
+                <input class="table-input" style="min-width:300px;" value="${product.المادة}" disabled>
+            </td>
+            <td>
+                <input class="table-input" style="width:110px;" value="${product.الباركود || ''}" disabled>
+            </td>
+            <td>
+                <input class="table-input" style="width:125px;" value="${product.الشركة}" disabled>
+            </td>
+            <td>
+                <input class="table-input" style="width:90px;" value="${product.الوحدة_1}" disabled>
+            </td>
+            <td>
+                <input class="table-input" style="width:55px;" value="${product.الوحدة_2}" disabled>
+            </td>
+            <td>
+                <input class="table-input" style="width:65px;" value="${product.آخر_سعر_شراء || ''}" disabled>
+            </td>
+            <td>
+                <input class="table-input" style="width:65px;" value="${product.السعر}" disabled>
+            </td>
+            <td>
+                <input class="table-input" style="width:45px;" value="${product.التحويل}" disabled>
+            </td>
+            <td>
+                <button class="edit-btn" onclick="editRow(${index})">تعديل</button>
+            </td>
+            <td>
+                <button class="delete-btn" onclick="deleteRow(${index})">حذف</button>
+            </td>
+        </tr>`;
+    });
+
+    tableBody.innerHTML = rows;
+    updatePageInfo();
+}
+
+function updatePageInfo(){
+    const totalPages = Math.ceil(products.length / itemsPerPage) || 1;
+    document.getElementById("pageInfo").innerHTML = `صفحة ${currentPage} من ${totalPages}`;
+}
+
+function nextPage(){
+    const totalPages = Math.ceil(products.length / itemsPerPage);
+    if(currentPage < totalPages){
+        currentPage++;
+        renderTable();
+    }
+}
+
+function prevPage(){
+    if(currentPage > 1){
+        currentPage--;
+        renderTable();
+    }
+}
+
+/* ===== toggleChecked - debounce للحفظ ===== */
+function toggleChecked(index){
+    const realIndex = (currentPage - 1) * itemsPerPage + index;
+    products[realIndex].checked = !products[realIndex].checked;
+    renderTable();
+    debouncedSave(); /* بدل saveProducts() مباشرة */
+}
+
+/* ===== تعديل ===== */
+function editRow(index){
+    const realIndex = (currentPage - 1) * itemsPerPage + index;
+    const product = products[realIndex];
+
+    document.getElementById("material").value = product.المادة;
+    document.getElementById("barcode").value = product.الباركود || "";
+    document.getElementById("company").value = product.الشركة;
+    document.getElementById("weight").value = product.الوحدة_1;
+    document.getElementById("weight2").value = product.الوحدة_2;
+    document.getElementById("buyPrice").value = product.آخر_سعر_شراء || "";
+    document.getElementById("sellPrice").value = product.السعر;
+    document.getElementById("conversion").value = product.التحويل;
+
+    currentImage = product.image || "";
+    document.getElementById("previewImage").src = currentImage;
+    document.getElementById("previewImage").style.display = currentImage ? "block" : "none";
+
+    editIndex = index;
+    closeProductsPopup();
+    window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function deleteAllProducts(){
+    if(confirm("⚠️ هل تريد حذف جميع المواد نهائياً؟")){
+        products = [];
+        renderTable();
+        saveProducts();
+        showMessage("🗑️ تم حذف جميع المواد");
+    }
+}
+
+/* ===== حذف ===== */
+function deleteRow(index){
+    if(confirm("هل تريد حذف المنتج؟")){
+        const realIndex = (currentPage - 1) * itemsPerPage + index;
+        products.splice(realIndex,1);
+        renderTable();
+        saveProducts();
+        showMessage("🗑️ تم حذف المنتج");
+    }
+}
+
+/* ===== تنظيف ===== */
+function clearInputs(){
+    document.getElementById("material").value = "";
+    document.getElementById("barcode").value = "";
+    document.getElementById("company").value = "";
+    document.getElementById("weight").value = "";
+    document.getElementById("weight2").value = "";
+    document.getElementById("buyPrice").value = "";
+    document.getElementById("sellPrice").value = "";
+    document.getElementById("conversion").value = "";
+    document.getElementById("productImage").value = "";
+    document.getElementById("previewImage").style.display = "none";
+    currentImage = "";
+}
+
+/* ===== رسائل ===== */
+function showMessage(text){
+    const box = document.getElementById("messageBox");
+    box.innerHTML = text;
+    box.style.display = "block";
+    box.style.opacity = "0";
+    box.style.transform = "translateX(-50%) translateY(-20px) scale(0.9)";
+    setTimeout(()=>{
+        box.style.transition = "all 0.35s ease";
+        box.style.opacity = "1";
+        box.style.transform = "translateX(-50%) translateY(0px) scale(1)";
+    },10);
+    setTimeout(()=>{
+        box.style.opacity = "0";
+        box.style.transform = "translateX(-50%) translateY(-20px) scale(0.9)";
+        setTimeout(()=>{ box.style.display = "none"; },300);
+    },3000);
+}
+
+/* ===== تصدير ===== */
+function exportJSON(){
+    const dataStr = JSON.stringify(products,null,2);
+    const blob = new Blob([dataStr],{type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "products.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    showMessage("⬇️ تم تصدير JSON");
+}
+
+/* ===== استيراد ===== */
+document.getElementById("jsonFile").addEventListener("change",function(event){
+    const file = event.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e){
+        try{
+            const importedProducts = JSON.parse(e.target.result);
+
+            const choice = prompt(
+                "اختر عملية الاستيراد:\n\n1 = دمج المنتجات\n2 = استبدال كامل\n3 = إلغاء الاستيراد"
+            );
+
+            if(choice === "1"){
+                const existingKeys = products.map(p =>
+                    (p.المادة.trim() + p.الوحدة_1.trim() + p.السعر.trim()).toLowerCase()
+                );
+                const newProducts = importedProducts.filter(p =>
+                    !existingKeys.includes(
+                        (p.المادة.trim() + p.الوحدة_1.trim() + p.السعر.trim()).toLowerCase()
+                    )
+                );
+                const skipped = importedProducts.length - newProducts.length;
+                products = [...products, ...newProducts];
+                showMessage(`🔄 تم دمج ${newProducts.length} مادة${skipped > 0 ? ` | تم تخطي ${skipped} مكررة` : ''}`);
+            }
+            else if(choice === "2"){
+                products = importedProducts;
+                showMessage("📥 تم استبدال المنتجات");
+            }
+            else{
+                showMessage("❌ تم إلغاء الاستيراد");
+                return;
+            }
+
+            renderTable();
+            saveProducts();
+
+        }catch{
+            showMessage("❌ الملف غير صالح");
+        }
+    };
+
+    event.target.value = ""; /* تصفير الـ input بعد الاستيراد */
+    reader.readAsText(file);
+});
+
+/* ===== البحث ===== */
+document.getElementById("searchInput").addEventListener("input",function(){
+    const value = this.value.trim();
+    const filtered = products.filter(item =>
+        item.المادة.includes(value) || item.الشركة.includes(value)
+    );
+    renderTable(filtered);
+});
+
+/* ===== فتح النافذة ===== */
+function toggleProductsTable(){
+    document.getElementById("tablePopup").style.display = "flex";
+}
+
+/* ===== اغلاق النافذة ===== */
+function closeProductsPopup(){
+    document.getElementById("tablePopup").style.display = "none";
+}
+
+/* ===== الانتر ===== */
+document.addEventListener("keydown",function(e){
+    if(e.key === "Enter"){
+        const active = document.activeElement;
+        if(active.tagName === "INPUT" && active.type !== "file"){
+            e.preventDefault();
+            const inputs = Array.from(
+                document.querySelectorAll("input:not([type='file'])")
+            ).filter(el => el.offsetParent !== null);
+            const currentIndex = inputs.indexOf(active);
+            const nextInput = inputs[currentIndex + 1];
+            if(nextInput){
+                nextInput.focus();
+            }else{
+                addProduct();
+            }
+        }
+    }
+});
+
+/* ===== IndexedDB ===== */
+let db;
+const request = indexedDB.open("ProductsDB",1);
+
+request.onupgradeneeded = function(event){
+    db = event.target.result;
+    if(!db.objectStoreNames.contains("products")){
+        db.createObjectStore("products",{keyPath:"id"});
+    }
+};
+
+request.onsuccess = function(event){
+    db = event.target.result;
+    loadProducts();
+};
+
+request.onerror = function(){
+    alert("❌ خطأ بفتح قاعدة البيانات");
+};
+
+/* ===== حفظ ===== */
+function saveProducts(){
+    if(!db) return;
+    const transaction = db.transaction(["products"],"readwrite");
+    const store = transaction.objectStore("products");
+    store.put({id:1,data:products});
+}
+
+/* ===== الباركود ===== */
+let scannerStream = null;
+let scannerInterval = null;
+
+function startBarcodeScanner(){
+    const modal = document.getElementById("scannerModal");
+    modal.style.display = "flex";
+    const video = document.getElementById("scannerVideo");
+    const status = document.getElementById("scannerStatus");
+
+    navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
+    }).then(stream => {
+        scannerStream = stream;
+        video.srcObject = stream;
+        video.play();
+        status.textContent = "جاري البحث عن باركود...";
+
+        if(typeof BarcodeDetector !== "undefined"){
+            const detector = new BarcodeDetector();
+            scannerInterval = setInterval(async () => {
+                try {
+                    const barcodes = await detector.detect(video);
+                    if(barcodes.length > 0){
+                        document.getElementById("barcode").value = barcodes[0].rawValue;
+                        stopBarcodeScanner();
+                        showMessage("✅ تم مسح الباركود: " + barcodes[0].rawValue);
+                    }
+                } catch(e) {}
+            }, 300);
+        } else {
+            /* fallback: ZXing عبر CDN */
+            const script = document.createElement("script");
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.20.0/zxing.min.js";
+            script.onload = function(){
+                try {
+                    const codeReader = new ZXing.BrowserMultiFormatReader();
+                    codeReader.decodeFromVideoElement(video, (result, err) => {
+                        if(result){
+                            document.getElementById("barcode").value = result.getText();
+                            codeReader.reset();
+                            stopBarcodeScanner();
+                            showMessage("✅ تم مسح الباركود: " + result.getText());
+                        }
+                    });
+                    window._zxingReader = codeReader;
+                } catch(e) {
+                    status.textContent = "الماسح غير متاح، اكتب الباركود يدوياً";
+                }
+            };
+            document.head.appendChild(script);
+        }
+    }).catch(() => {
+        status.textContent = "❌ لا يمكن الوصول للكاميرا";
+    });
+}
+
+function stopBarcodeScanner(){
+    if(scannerInterval){ clearInterval(scannerInterval); scannerInterval = null; }
+    if(window._zxingReader){ try{ window._zxingReader.reset(); }catch(e){} window._zxingReader = null; }
+    if(scannerStream){ scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+    document.getElementById("scannerModal").style.display = "none";
+}
+
+/* ===== PWA ===== */
+if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+
+/* ===== تحميل ===== */
+function loadProducts(){
+    if(!db) return;
+    const transaction = db.transaction(["products"],"readonly");
+    const store = transaction.objectStore("products");
+    const request = store.get(1);
+    request.onsuccess = function(){
+        if(request.result){
+            products = (request.result.data || []).map(product => ({
+                checked:false,
+                ...product
+            }));
+            renderTable();
+        }
+    };
+}
+
+</script>
+
+<!-- نافذة عرض الصورة -->
+<div
+    id="imagePopup"
+    style="
+        display:none;
+        position:fixed;
+        top:0;
+        right:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.85);
+        z-index:999999;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
+    "
+    onclick="closeImagePopup()"
+>
+    <img
+        id="popupImage"
+        style="
+            max-width:90%;
+            max-height:90%;
+            border-radius:20px;
+            box-shadow:0 20px 40px rgba(0,0,0,0.5);
+            background:white;
+        "
+    >
+</div>
+
+<div
+    id="hoverPreview"
+    style="
+        display:none;
+        position:fixed;
+        z-index:999999;
+        pointer-events:none;
+        background:white;
+        padding:8px;
+        border-radius:16px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    "
+>
+    <img
+        id="hoverPreviewImg"
+        style="
+            width:250px;
+            max-height:250px;
+            object-fit:contain;
+            border-radius:12px;
+        "
+    >
+</div>
+
+</body>
+</html>

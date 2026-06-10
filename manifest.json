@@ -1,0 +1,27 @@
+{
+  "name": "إدارة المنتجات",
+  "short_name": "منتجاتي",
+  "description": "نظام إدارة المنتجات",
+  "start_url": "/products/",
+  "display": "standalone",
+  "background_color": "#eefbf3",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f4e6.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f4e6.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f4e6.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
