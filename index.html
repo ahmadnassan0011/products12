@@ -687,7 +687,7 @@ tr:hover td{
 
 <div>
 
-<h1>إدارة المنتجات</h1>
+<h1>إدارةااا المنتجات</h1>
 
 <p>نظام المنتجات</p>
 
@@ -900,8 +900,7 @@ gap:15px;
         <button onclick="closeScanner()" style="border:none;background:#ef4444;color:white;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px;">✖</button>
     </div>
     <div style="position:relative;">
-        <div id="scannerVideo" style="width:100%;display:none;"></div>
-<input type="file" id="barcodeCapture" accept="image/*" capture="environment" hidden>
+        <div id="scannerDiv" style="width:100%;"></div>
     </div>
     <p id="scannerStatus" style="text-align:center;padding:12px;color:#6b7280;font-size:14px;margin:0;">وجّه الكاميرا نحو الباركود...</p>
 </div>
@@ -1613,103 +1612,94 @@ function saveProducts(){
 }
 
 /* ===== الباركود ===== */
-function openScanner(){
-    /* Android Intent — يفتح ماسح الباركود المدمج */
-    const intentUrl = "intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end";
-    
-    /* محاولة فتح تطبيق ماسح */
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-    
-    /* استقبال النتيجة من الـ URL */
-    window._barcodeResolve = function(code){
-        document.getElementById("barcode").value = code;
-        showMessage("✅ تم مسح الباركود: " + code);
-    };
+let scanStream = null;
+let scanRaf = null;
+let scanCanvas = document.createElement("canvas");
+let scanCtx = scanCanvas.getContext("2d", { willReadFrequently: true });
 
-    /* الطريقة الأضمن: input مخفي يفتح الكاميرا */
-    document.getElementById("barcodeCapture").click();
+function openScanner(){
+    document.getElementById("scannerModal").style.display = "flex";
+    document.getElementById("scannerStatus").textContent = "جاري فتح الكاميرا...";
+
+    navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal:"environment" }, width:{ideal:1280}, height:{ideal:720} }
+    }).then(stream => {
+        scanStream = stream;
+
+        /* إنشاء video ديناميكي */
+        const container = document.getElementById("scannerDiv");
+        container.innerHTML = "";
+        const video = document.createElement("video");
+        video.id = "scanLiveVideo";
+        video.style = "width:100%;display:block;";
+        video.setAttribute("playsinline","");
+        video.setAttribute("autoplay","");
+        video.setAttribute("muted","");
+        container.appendChild(video);
+
+        video.srcObject = stream;
+        video.play();
+        video.addEventListener("loadedmetadata", () => {
+            scanCanvas.width  = video.videoWidth;
+            scanCanvas.height = video.videoHeight;
+            document.getElementById("scannerStatus").textContent = "وجّه الكاميرا نحو الباركود...";
+            doScan(video);
+        });
+    }).catch(() => {
+        document.getElementById("scannerStatus").textContent = "❌ تعذر الوصول للكاميرا";
+    });
 }
 
-document.addEventListener("DOMContentLoaded", function(){
-    const input = document.getElementById("barcodeCapture");
-    if(!input) return;
-    
-    input.addEventListener("change", function(){
-        const file = this.files[0];
-        if(!file){ return; }
-        this.value = "";
+function doScan(video){
+    if(!scanStream) return;
+    scanRaf = requestAnimationFrame(() => {
+        scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
 
-        /* تحميل ZXing وقراءة الصورة */
-        function doScan(){
-            const url = URL.createObjectURL(file);
-            const img = new Image();
-            img.onload = function(){
-                const canvas = document.createElement("canvas");
-                canvas.width  = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0);
+        if(typeof BarcodeDetector !== "undefined"){
+            new BarcodeDetector({
+                formats:["ean_13","ean_8","code_128","code_39","upc_a","upc_e","qr_code","itf","codabar","code_93","data_matrix","pdf417","aztec"]
+            }).detect(scanCanvas).then(codes => {
+                if(codes.length){ onFound(codes[0].rawValue); }
+                else { doScan(video); }
+            }).catch(() => doScan(video));
 
-                const hints = new Map();
-                hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-                hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-                    ZXing.BarcodeFormat.EAN_13,
-                    ZXing.BarcodeFormat.EAN_8,
-                    ZXing.BarcodeFormat.CODE_128,
-                    ZXing.BarcodeFormat.CODE_39,
-                    ZXing.BarcodeFormat.UPC_A,
-                    ZXing.BarcodeFormat.UPC_E,
-                    ZXing.BarcodeFormat.QR_CODE,
-                    ZXing.BarcodeFormat.ITF,
-                ]);
+        } else {
+            /* ZXing fallback */
+            if(!window._zxReady){
+                if(!window._zxLoading){
+                    window._zxLoading = true;
+                    const s = document.createElement("script");
+                    s.src = "https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js";
+                    s.onload = () => { window._zxReady = true; };
+                    document.head.appendChild(s);
+                }
+                setTimeout(() => doScan(video), 400);
+                return;
+            }
+            try {
+                const hints = new Map([[ZXing.DecodeHintType.TRY_HARDER, true]]);
                 const reader = new ZXing.MultiFormatReader();
                 reader.setHints(hints);
-
-                /* محاولة قراءة من أجزاء مختلفة من الصورة */
-                let found = false;
-                const scales = [1, 0.75, 0.5];
-                for(const scale of scales){
-                    if(found) break;
-                    try {
-                        const w = Math.floor(canvas.width  * scale);
-                        const h = Math.floor(canvas.height * scale);
-                        const c2 = document.createElement("canvas");
-                        c2.width = w; c2.height = h;
-                        c2.getContext("2d").drawImage(canvas, 0, 0, w, h);
-                        const d = c2.getContext("2d").getImageData(0, 0, w, h);
-                        const lum = new ZXing.RGBLuminanceSource(d.data, w, h);
-                        const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-                        const result = reader.decode(bmp);
-                        if(result){
-                            document.getElementById("barcode").value = result.getText();
-                            showMessage("✅ تم مسح الباركود: " + result.getText());
-                            found = true;
-                        }
-                    } catch(e){}
-                }
-                if(!found){
-                    showMessage("❌ ما قدر يقرأ — صوّر الباركود أوضح وأقرب");
-                }
-                URL.revokeObjectURL(url);
-            };
-            img.src = url;
-        }
-
-        if(typeof ZXing === "undefined"){
-            const s = document.createElement("script");
-            s.src = "https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js";
-            s.onload = doScan;
-            s.onerror = () => showMessage("❌ فشل تحميل الماسح");
-            document.head.appendChild(s);
-        } else {
-            doScan();
+                const imgData = scanCtx.getImageData(0,0,scanCanvas.width,scanCanvas.height);
+                const lum = new ZXing.RGBLuminanceSource(imgData.data, scanCanvas.width, scanCanvas.height);
+                const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+                onFound(reader.decode(bmp).getText());
+            } catch(e){ doScan(video); }
         }
     });
-});
+}
 
-function closeScanner(){}
+function onFound(val){
+    document.getElementById("barcode").value = val;
+    showMessage("✅ تم مسح الباركود: " + val);
+    closeScanner();
+}
+
+function closeScanner(){
+    if(scanRaf){ cancelAnimationFrame(scanRaf); scanRaf = null; }
+    if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream = null; }
+    document.getElementById("scannerModal").style.display = "none";
+}
 
 /* ===== PWA ===== */
 if("serviceWorker" in navigator){
