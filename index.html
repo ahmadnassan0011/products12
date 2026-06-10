@@ -4,11 +4,8 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>إدارة المنتجات</title>
-
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#7c3aed">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -865,8 +862,7 @@ outline:none;
 
 <button
 type="button"
-id="scanBtn"
-onclick="startBarcodeScanner()"
+onclick="document.getElementById('barcodeInput').click()"
 style="
 height:46px;
 padding:0 18px;
@@ -882,32 +878,8 @@ white-space:nowrap;
 >
 📷 مسح
 </button>
+<input type="file" id="barcodeInput" accept="image/*" capture="environment" hidden>
 
-</div>
-
-<!-- نافذة الماسح -->
-<div id="scannerModal" style="
-display:none;
-position:fixed;
-top:0;right:0;
-width:100%;height:100%;
-background:rgba(0,0,0,0.85);
-z-index:999999;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-gap:15px;
-padding:20px;
-">
-<div style="background:white;border-radius:20px;padding:15px;width:100%;max-width:500px;">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-<span style="font-weight:bold;font-size:16px;">📷 امسح الباركود</span>
-<button onclick="stopBarcodeScanner()" style="border:none;background:#ef4444;color:white;padding:8px 14px;border-radius:10px;cursor:pointer;">✖ إغلاق</button>
-</div>
-<video id="scannerVideo" style="width:100%;border-radius:12px;" playsinline></video>
-<canvas id="scannerCanvas" style="display:none;"></canvas>
-<p id="scannerStatus" style="text-align:center;margin-top:10px;color:#6b7280;font-size:14px;">جاري البحث عن باركود...</p>
-</div>
 </div>
 
 </div>
@@ -1616,67 +1588,44 @@ function saveProducts(){
 }
 
 /* ===== الباركود ===== */
-let scannerStream = null;
-let scannerInterval = null;
-
-function startBarcodeScanner(){
-    const modal = document.getElementById("scannerModal");
-    modal.style.display = "flex";
-    const video = document.getElementById("scannerVideo");
-    const status = document.getElementById("scannerStatus");
-
-    navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-    }).then(stream => {
-        scannerStream = stream;
-        video.srcObject = stream;
-        video.play();
-        status.textContent = "جاري البحث عن باركود...";
-
-        if(typeof BarcodeDetector !== "undefined"){
-            const detector = new BarcodeDetector();
-            scannerInterval = setInterval(async () => {
-                try {
-                    const barcodes = await detector.detect(video);
-                    if(barcodes.length > 0){
-                        document.getElementById("barcode").value = barcodes[0].rawValue;
-                        stopBarcodeScanner();
-                        showMessage("✅ تم مسح الباركود: " + barcodes[0].rawValue);
-                    }
-                } catch(e) {}
-            }, 300);
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("barcodeInput").addEventListener("change", function(){
+        const file = this.files[0];
+        if(!file) return;
+        this.value = "";
+        if(typeof Quagga === "undefined"){
+            const s = document.createElement("script");
+            s.src = "https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js";
+            s.onload = () => scanBarcode(file);
+            s.onerror = () => showMessage("❌ فشل تحميل الماسح");
+            document.head.appendChild(s);
         } else {
-            /* fallback: ZXing عبر CDN */
-            const script = document.createElement("script");
-            script.src = "https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.20.0/zxing.min.js";
-            script.onload = function(){
-                try {
-                    const codeReader = new ZXing.BrowserMultiFormatReader();
-                    codeReader.decodeFromVideoElement(video, (result, err) => {
-                        if(result){
-                            document.getElementById("barcode").value = result.getText();
-                            codeReader.reset();
-                            stopBarcodeScanner();
-                            showMessage("✅ تم مسح الباركود: " + result.getText());
-                        }
-                    });
-                    window._zxingReader = codeReader;
-                } catch(e) {
-                    status.textContent = "الماسح غير متاح، اكتب الباركود يدوياً";
-                }
-            };
-            document.head.appendChild(script);
+            scanBarcode(file);
         }
-    }).catch(() => {
-        status.textContent = "❌ لا يمكن الوصول للكاميرا";
     });
-}
+});
 
-function stopBarcodeScanner(){
-    if(scannerInterval){ clearInterval(scannerInterval); scannerInterval = null; }
-    if(window._zxingReader){ try{ window._zxingReader.reset(); }catch(e){} window._zxingReader = null; }
-    if(scannerStream){ scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
-    document.getElementById("scannerModal").style.display = "none";
+function scanBarcode(file){
+    const url = URL.createObjectURL(file);
+    Quagga.decodeSingle({
+        src: url,
+        numOfWorkers: 0,
+        locate: true,
+        decoder:{
+            readers:[
+                "ean_reader","ean_8_reader","code_128_reader",
+                "code_39_reader","upc_reader","upc_e_reader"
+            ]
+        }
+    }, function(result){
+        URL.revokeObjectURL(url);
+        if(result && result.codeResult){
+            document.getElementById("barcode").value = result.codeResult.code;
+            showMessage("✅ تم مسح الباركود: " + result.codeResult.code);
+        } else {
+            showMessage("❌ ما قدر يقرأ الباركود — صوّر أوضح وأقرب");
+        }
+    });
 }
 
 /* ===== PWA ===== */
