@@ -687,7 +687,7 @@ tr:hover td{
 
 <div>
 
-<h1>إدارة المنتجاتتت</h1>
+<h1>إدارة تااالمنتجات</h1>
 
 <p>نظام المنتجات</p>
 
@@ -900,8 +900,7 @@ gap:15px;
         <button onclick="closeScanner()" style="border:none;background:#ef4444;color:white;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px;">✖</button>
     </div>
     <div style="position:relative;">
-        <video id="scannerVideo" style="width:100%;display:block;" playsinline autoplay muted></video>
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250px;height:100px;border:3px solid #10b981;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.4);"></div>
+        <div id="scannerVideo" style="width:100%;"></div>
     </div>
     <p id="scannerStatus" style="text-align:center;padding:12px;color:#6b7280;font-size:14px;margin:0;">وجّه الكاميرا نحو الباركود...</p>
 </div>
@@ -1613,89 +1612,66 @@ function saveProducts(){
 }
 
 /* ===== الباركود ===== */
-let scannerStream = null;
-let scannerInterval = null;
+let html5Scanner = null;
 
 function openScanner(){
     document.getElementById("scannerModal").style.display = "flex";
-    startScanning();
+    const status = document.getElementById("scannerStatus");
+    status.textContent = "جاري تحميل الماسح...";
+
+    if(typeof Html5Qrcode === "undefined"){
+        const s = document.createElement("script");
+        s.src = "https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js";
+        s.onload = startScanning;
+        s.onerror = () => { status.textContent = "❌ فشل تحميل الماسح"; };
+        document.head.appendChild(s);
+    } else {
+        startScanning();
+    }
 }
 
 function startScanning(){
-    const video = document.getElementById("scannerVideo");
     const status = document.getElementById("scannerStatus");
+    status.textContent = "وجّه الكاميرا نحو الباركود...";
 
-    navigator.mediaDevices.getUserMedia({
-        video: {
-            facingMode: "environment",
-            width:  { ideal: 1920 },
-            height: { ideal: 1080 }
-        }
-    }).then(stream => {
-        scannerStream = stream;
-        video.srcObject = stream;
-        video.play();
-
-        video.addEventListener("loadedmetadata", () => {
-            /* BarcodeDetector المدمج — الأقوى للباركود الخطي */
-            if(typeof BarcodeDetector !== "undefined"){
-                BarcodeDetector.getSupportedFormats().then(formats => {
-                    const detector = new BarcodeDetector({ formats });
-                    scannerInterval = setInterval(async () => {
-                        try {
-                            if(video.readyState !== 4) return;
-                            const codes = await detector.detect(video);
-                            if(codes.length > 0){
-                                const val = codes[0].rawValue;
-                                document.getElementById("barcode").value = val;
-                                showMessage("✅ تم مسح الباركود: " + val);
-                                closeScanner();
-                            }
-                        } catch(e){}
-                    }, 200);
-                });
-            } else {
-                /* fallback: قراءة من canvas بـ ZXing */
-                status.textContent = "جاري تحميل الماسح...";
-                const s = document.createElement("script");
-                s.src = "https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js";
-                s.onload = () => {
-                    status.textContent = "وجّه الكاميرا نحو الباركود...";
-                    const canvas = document.createElement("canvas");
-                    const hints = new Map();
-                    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-                    const reader = new ZXing.MultiFormatReader();
-                    reader.setHints(hints);
-
-                    scannerInterval = setInterval(() => {
-                        try {
-                            if(video.readyState !== 4) return;
-                            canvas.width  = video.videoWidth;
-                            canvas.height = video.videoHeight;
-                            canvas.getContext("2d").drawImage(video, 0, 0);
-                            const imgData = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height);
-                            const lum = new ZXing.RGBLuminanceSource(imgData.data, canvas.width, canvas.height);
-                            const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-                            const result = reader.decode(bmp);
-                            if(result){
-                                document.getElementById("barcode").value = result.getText();
-                                showMessage("✅ تم مسح الباركود: " + result.getText());
-                                closeScanner();
-                            }
-                        } catch(e){}
-                    }, 300);
-                };
-                document.head.appendChild(s);
-            }
-        });
-    }).catch(err => {
-        status.textContent = "❌ تعذر الوصول للكاميرا";
+    html5Scanner = new Html5Qrcode("scannerVideo");
+    html5Scanner.start(
+        { facingMode: "environment" },
+        {
+            fps: 15,
+            qrbox: { width: 280, height: 120 },
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.QR_CODE,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.ITF,
+                Html5QrcodeSupportedFormats.DATA_MATRIX
+            ]
+        },
+        (decodedText) => {
+            document.getElementById("barcode").value = decodedText;
+            showMessage("✅ تم مسح الباركود: " + decodedText);
+            closeScanner();
+        },
+        () => {}
+    ).catch(err => {
+        status.textContent = "❌ تعذر الوصول للكاميرا: " + err;
     });
 }
 
 function closeScanner(){
-    if(scannerInterval){ clearInterval(scannerInterval); scannerInterval = null; }
-    if(scannerStream){ scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+    if(html5Scanner){
+        html5Scanner.stop().then(() => {
+            html5Scanner.clear();
+            html5Scanner = null;
+        }).catch(() => {
+            html5Scanner = null;
+        });
+    }
     document.getElementById("scannerModal").style.display = "none";
 }
 
